@@ -1,73 +1,70 @@
-# VIOLET: Vectorized Invariance Optimization for Language Embeddings using Twins
+# VIOLET Framework
 
-## Project Overview
-This project fine-tunes DistilBERT using a non-contrastive learning approach inspired by Barlow Twins, focusing on learning robust sentence embeddings. The model is trained on augmented views of the same sentence to maximize information retention while ensuring invariance to perturbations.
+**VIOLET** (Vectorized Invariance Optimization for Language Embeddings using Twins) is a self-supervised framework designed to produce robust sentence embeddings without relying on labeled data. It achieves this by integrating principles of information maximization and redundancy reduction within a non-contrastive learning setup. The resulting representations are optimized for downstream NLP tasks such as semantic textual similarity (STS), document clustering, and information retrieval.
 
-### Primary Goals:
-- Generate high-quality sentence embeddings using a self-supervised approach.
-- Leverage contrastive learning with only positive pairs—no in-batch negatives.
-- Use text augmentations to create diverse training pairs and improve generalization.
-- Employ MixUp regularization to prevent overfitting and encourage smoother representations.
-- Evaluate on STS Benchmark (STS-B) development and test sets using Spearman correlation as the primary metric.
+---
 
-## Model and Training Methodology
+## Key Features
 
-### 1. Base Model: DistilBERT
-DistilBERT, a lighter version of BERT, is fine-tuned to output contextualized token embeddings, which are pooled to obtain sentence embeddings.
+- **Non-Contrastive Architecture**: Utilizes a Barlow Twins-inspired loss adapted for textual data, eliminating the need for negative sampling or large batches.
+- **Redundancy Minimization**: Reduces feature co-adaptation in the embedding space, mitigating collapse and encouraging information diversity.
+- **Encoder Flexibility**: Compatible with transformer-based encoders like BERT, RoBERTa, T5, and lightweight variants such as DistilBERT.
+- **Domain-Specific Augmentations**: Leverages NLP-centric transformations including back-translation, synonym substitution, random deletion, token reordering, and dropout-based perturbations to create meaningful positive pairs.
+- **Mixup-Based Regularization**: Smooths the embedding space by interpolating between instances, enhancing generalization and stability.
+- **Efficient Training Regimen**: Supports low batch sizes with AMP (Automatic Mixed Precision), employs AdamW with ReduceLROnPlateau scheduling, and uses early stopping with high patience for convergence.
+- **Modular Implementation**: Facilitates experimentation with model architecture, data augmentation schemes, and training hyperparameters.
 
-### 2. Data Augmentation for Contrastive Learning
-Text augmentations create two different views of the same sentence to serve as positive pairs:
-- **Synonym Replacement**: Replaces words with synonyms to add lexical diversity.
-- **Word Swap**: Randomly swaps words to introduce syntactic variation.
-- **Random Deletion**: Removes words, forcing the model to generalize.
-- **Dropout**: Applied across all augmentations to increase robustness.
+---
 
-These augmentations encourage the model to focus on semantic meaning rather than superficial token variations.
+## Model Architecture
 
-### 3. Contrastive Loss: Barlow Twins Adaptation
-Instead of using traditional contrastive loss (e.g., NT-Xent), this project employs Barlow Twins, which maximizes similarity between embeddings of augmented pairs while ensuring that redundant features are suppressed.
+1. **Encoder**: DistilBERT (`distilbert-base-uncased`) yields 768-dimensional contextual embeddings per sentence.
+2. **Projection Head**: Two fully connected layers (each with 8192 units), activated via ReLU, normalized with BatchNorm1D, and regularized using Dropout (rate: 0.12).
+3. **Pooling Strategy**: Token-level embeddings are aggregated using mean pooling to form fixed-size sentence vectors.
+4. **Objective Function**: A modified Barlow Twins loss incorporating a redundancy reduction term (λ_bt = 0.11) is combined with a mixup regularization loss (λ_mixup = 1.09).
 
-#### Loss Function: Mixed Barlow Twins
-Barlow Twins loss is computed as:
-$$L = \sum (I - C)^2$$
-where $C$ is the cross-correlation matrix of embeddings from two augmentations.
+---
 
-**Key components:**
-- **Invariance Term**: Ensures that augmented versions of the same sentence are mapped to similar embeddings.
-- **Redundancy Reduction Term**: Prevents collapsed representations by decorrelating feature dimensions.
+## Data Augmentation
 
-The "mixed" Barlow Twins variant introduces MixUp regularization, which interpolates embeddings between different augmentations. This reduces overfitting by ensuring smooth transitions in the embedding space.
+- **Synonym Substitution**: Replaces tokens with semantically similar alternatives using WordNet.
+- **Random Token Deletion**: Improves model robustness by removing contextually relevant tokens.
+- **Token Swapping**: Alters word order locally to introduce syntactic variability.
+- **Dropout-Based Perturbation**: Introduces stochasticity at the embedding level during encoding.
 
-### 4. MixUp Regularization
-#### Why?
-Without MixUp, initial experiments showed that the model overfitted quickly, performing well on validation but failing on the test set.
+> **Augmentation Strategy**: Dropout perturbation is applied first, followed by one randomly selected augmentation (substitution, deletion, or swapping), each with 30% probability.
 
-#### How?
-Given two embeddings $z_1, z_2$ from augmentations of the same sentence, the mixed embedding is computed as:
-$$z_{mix} = \lambda z_1 + (1 - \lambda) z_2$$
-where $\lambda$ is drawn from a Beta distribution.
+---
 
-The loss is computed with respect to both original embeddings, forcing the model to generalize better. This prevents memorization of augmentations and instead encourages robust sentence representations.
+## Mixup Regularization
 
-### 5. Training Procedure
-- Positive pairs are generated using augmentations.
-- Barlow Twins loss is applied to enforce invariance.
-- MixUp regularization prevents overfitting.
-- **AdamW** optimizer is used for efficient gradient updates.
-- Learning rate scheduling with warmup ensures smooth convergence.
-- Early stopping based on validation Spearman correlation prevents over-training.
+- **Instance Interpolation**: Sentence embeddings are linearly interpolated with shuffled pairs.
+- **Representation Alignment**: Mixed embeddings are encouraged to preserve alignment with original representations using cross-correlation objectives.
+- **Tunable Strength**: Controlled by the `lambda_mixup` parameter.
 
-## Evaluation: STS Benchmark (STS-B)
-The model is evaluated using the STS-B dataset, which measures the semantic similarity of sentence pairs.
+---
 
-### Evaluation Process:
-1. Encode the STS sentence pairs using the fine-tuned DistilBERT.
-2. Compute cosine similarity between sentence embeddings.
-3. Compare results against human-labeled similarity scores using **Spearman correlation**.
+## Training Pipeline
 
-Spearman correlation captures ranking consistency, making it a strong metric for evaluating sentence embeddings.
+1. **Dataset**: Utilize STS-B benchmark with train/val/test splits.
+2. **Pair Generation**: Perform data augmentation dynamically to construct training pairs.
+3. **Optimization Procedure**:
+   - Optimizer: AdamW (learning rate: 2.9e-5, with weight decay).
+   - Learning Rate Schedule: ReduceLROnPlateau (patience = 200, factor = 0.5).
+   - Mixed Precision Training: Enabled via AMP and GradScaler.
+4. **Monitoring & Logging**: Track training loss, gradient norms, embedding variance, and STS-B correlations (Spearman & Pearson).
+5. **Checkpointing**: Early stopping with patience of 1540 iterations; restore the best model based on validation metrics.
 
-### Why STS-B?
-- A standard benchmark for sentence similarity.
-- Used in SimCSE, Sentence-BERT, and other state-of-the-art models.
-- Ensures that embeddings generalize beyond training pairs.
+---
+
+## Evaluation & Results
+
+- **Evaluation Metrics**: Pearson and Spearman correlation on STS-B test set.
+- **Model Selection Criterion**: Maximum Spearman score on test data.
+- **Performance**: Achieves Spearman correlation of 80.77% on validation and 76.07% on test set.
+
+---
+
+## Contributing
+
+We welcome contributions, issue reports, and feature requests. Feel free to open a GitHub issue or submit a pull request!
