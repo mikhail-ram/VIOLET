@@ -34,7 +34,7 @@
 - **Token Swapping**: Alters word order locally to introduce syntactic variability.
 - **Dropout-Based Perturbation**: Introduces stochasticity at the embedding level during encoding.
 
-> **Augmentation Strategy**: Dropout perturbation is applied first, followed by one randomly selected augmentation (substitution, deletion, or swapping), each with 30% probability.
+> **Augmentation Strategy**: Dropout perturbation is applied first, followed by one randomly selected augmentation (substitution, deletion, or swapping).
 
 ---
 
