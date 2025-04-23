@@ -61,6 +61,15 @@
 
 ## Evaluation & Results
 
+| Model                     | STS-B Score |
+|---------------------------|-------------|
+| DistilBERT                | 67.5        |
+| DistilFACE                | 73.8        |
+| CT-BERT-Base              | 74.31       |
+| SimCSE-BERT-Base          | 76.85       |
+| SBERT-NLI_Base            | 77.03       |
+| **Mixed Barlow Twins (ours)** | **76.07**   |
+
 - **Evaluation Metrics**: Pearson and Spearman correlation on STS-B test set.
 - **Model Selection Criterion**: Maximum Spearman score on test data.
 - **Performance**: Achieves Spearman correlation of 80.77% on validation and 76.07% on test set.
