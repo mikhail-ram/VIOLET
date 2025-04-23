@@ -1,7 +1,7 @@
 # VIOLET: Vectorized Invariance Optimization for Language Embeddings using Twins
 
 ## Project Overview
-This project fine-tunes DistilBERT using a contrastive learning approach inspired by Barlow Twins, focusing on learning robust sentence embeddings. The model is trained on augmented views of the same sentence to maximize information retention while ensuring invariance to perturbations.
+This project fine-tunes DistilBERT using a non-contrastive learning approach inspired by Barlow Twins, focusing on learning robust sentence embeddings. The model is trained on augmented views of the same sentence to maximize information retention while ensuring invariance to perturbations.
 
 ### Primary Goals:
 - Generate high-quality sentence embeddings using a self-supervised approach.
