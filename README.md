@@ -1,6 +1,6 @@
 # VIOLET Framework
 
-![Best Graph](Best%20Graph.png)
+![Best Graph](best%20graph.png)
 
 **VIOLET** (Vectorized Invariance Optimization for Language Embeddings using Twins) is a self-supervised framework designed to produce robust sentence embeddings without relying on labeled data. It achieves this by integrating principles of information maximization and redundancy reduction within a non-contrastive learning setup. The resulting representations are optimized for downstream NLP tasks such as semantic textual similarity (STS), document clustering, and information retrieval.
 
