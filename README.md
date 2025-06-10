@@ -20,10 +20,10 @@
 
 ## Model Architecture
 
-1. **Encoder**: DistilBERT (`distilbert-base-uncased`) yields 768-dimensional contextual embeddings per sentence.
-2. **Projection Head**: Two fully connected layers (each with 8192 units), activated via ReLU, normalized with BatchNorm1D, and regularized using Dropout (rate: 0.12).
+1. **Encoder**: BERT (`bert-base-uncased`) yields 768-dimensional contextual embeddings per sentence.
+2. **Projection Head**: 2 fully connected layers (each with 4096 units), activated via ReLU, normalized with BatchNorm1D, and regularized using Dropout (rate: 0.117).
 3. **Pooling Strategy**: Token-level embeddings are aggregated using mean pooling to form fixed-size sentence vectors.
-4. **Objective Function**: A modified Barlow Twins loss incorporating a redundancy reduction term (λ_bt = 0.11) is combined with a mixup regularization loss (λ_mixup = 1.09).
+4. **Objective Function**: A modified Barlow Twins loss incorporating a redundancy reduction term (λ_bt = 0.149) is combined with a mixup regularization loss (λ_mixup = 1.06).
 
 ---
 
@@ -51,11 +51,11 @@
 1. **Dataset**: Utilize STS-B benchmark with train/val/test splits.
 2. **Pair Generation**: Perform data augmentation dynamically to construct training pairs.
 3. **Optimization Procedure**:
-   - Optimizer: AdamW (learning rate: 2.9e-5, with weight decay).
+   - Optimizer: AdamW (learning rate: 5.59e-5, with weight decay).
    - Learning Rate Schedule: ReduceLROnPlateau (patience = 200, factor = 0.5).
    - Mixed Precision Training: Enabled via AMP and GradScaler.
 4. **Monitoring & Logging**: Track training loss, gradient norms, embedding variance, and STS-B correlations (Spearman & Pearson).
-5. **Checkpointing**: Early stopping with patience of 1540 iterations; restore the best model based on validation metrics.
+5. **Checkpointing**: Early stopping with patience; restore the best model based on validation metrics.
 
 ---
 
@@ -68,7 +68,7 @@
 | CT-BERT-Base              | 74.31       |
 | SimCSE-BERT-Base          | 76.85       |
 | SBERT-NLI_Base            | 77.03       |
-| **Mixed Barlow Twins (ours)** | **76.07**   |
+| **Mixed Barlow Twins (ours)** | **74.74**   |
 
 - **Evaluation Metrics**: Pearson and Spearman correlation on STS-B test set.
 - **Model Selection Criterion**: Maximum Spearman score on test data.
