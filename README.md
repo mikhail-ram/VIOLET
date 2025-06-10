@@ -72,7 +72,7 @@
 
 - **Evaluation Metrics**: Pearson and Spearman correlation on STS-B test set.
 - **Model Selection Criterion**: Maximum Spearman score on test data.
-- **Performance**: Achieves Spearman correlation of 80.77% on validation and 76.07% on test set.
+- **Performance**: Achieves Spearman correlation of 80.14% on validation and 74.74% on test set.
 
 ---
 
